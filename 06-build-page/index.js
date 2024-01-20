@@ -1,5 +1,6 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { createWriteStream } = require('node:fs');
 
 const DIR_NAME = '06-build-page';
 const ASSETS_DIR_NAME = 'assets';
@@ -41,6 +42,50 @@ const copyDir = async (srcPath, dstPath) => {
   }
 };
 
+const mergeStyles = async (srcPath, dstPath) => {
+  try {
+    await fs.rm(dstPath, {
+      force: true,
+      recursive: true,
+    });
+    const bundleWriteStream = createWriteStream(dstPath, {
+      autoClose: true,
+    });
+
+    await fs
+      .readdir(srcPath, {
+        withFileTypes: true,
+      })
+      .then(async (files) => {
+        for (const file of files) {
+          if (file.isFile()) {
+            const { ext } = path.parse(file.name);
+            const filePath = path.join(file.path, file.name);
+            if (ext === '.css') {
+              const fd = await fs.open(filePath);
+              const readStream = fd.createReadStream();
+
+              readStream.on('data', (ch) => {
+                bundleWriteStream.write(ch);
+              });
+
+              readStream.on('end', function () {
+                fd.close();
+              });
+
+              readStream.on('error', function (err) {
+                console.log(err.stack);
+                fd.close();
+              });
+            }
+          }
+        }
+      });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 const bundler = async (distDirName) => {
   const distDirPath = makePath(distDirName);
   const distAssetsPath = makePath(distDirName, ASSETS_DIR_NAME);
@@ -72,7 +117,8 @@ const bundler = async (distDirName) => {
     /* Copy Assets */
     await copyDir(srcAssetsPath, distAssetsPath);
 
-
+    /* Merge styles */
+    await mergeStyles(srcStylesPath, distStylesPath);
   } catch (err) {
     console.error(err);
     return err;
