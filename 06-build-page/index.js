@@ -86,6 +86,31 @@ const mergeStyles = async (srcPath, dstPath) => {
   }
 };
 
+const readHtml = async (filePath) => {
+  const fd = await fs.open(filePath, 'r');
+
+  return new Promise((res, rej) => {
+    const readStream = fd.createReadStream();
+
+    let data = '';
+
+    readStream.on('data', (ch) => {
+      data += ch;
+    });
+
+    readStream.on('end', function () {
+      fd.close();
+      return res(data);
+    });
+
+    readStream.on('error', function (err) {
+      // console.log(err.stack);
+      fd.close();
+      return rej(err);
+    });
+  });
+};
+
 const bundler = async (distDirName) => {
   const distDirPath = makePath(distDirName);
   const distAssetsPath = makePath(distDirName, ASSETS_DIR_NAME);
@@ -96,15 +121,6 @@ const bundler = async (distDirName) => {
   const srcMainTemplatePath = makePath(SRC_MAIN_TEMPLATE_FILE_NAME);
   const srcStylesPath = makePath(SRC_STYLES_DIR);
   const srcAssetsPath = makePath(ASSETS_DIR_NAME);
-
-  console.log(distDirPath);
-  console.log(distAssetsPath);
-  console.log(distHtmlPath);
-  console.log(distStylesPath);
-  console.log(srcTemplatesPath);
-  console.log(srcMainTemplatePath);
-  console.log(srcStylesPath);
-  console.log(srcAssetsPath);
 
   try {
     /* Create dist folder */
@@ -119,6 +135,28 @@ const bundler = async (distDirName) => {
 
     /* Merge styles */
     await mergeStyles(srcStylesPath, distStylesPath);
+
+    /* read html template */
+    let html = await readHtml(srcMainTemplatePath);
+
+    /* replase templates */
+    const templateNames = html
+      .match(/\{\{[a-z]+\}\}/g)
+      .map((val) => val.replace(/\{\{(.+)\}\}/, '$1'));
+    await Promise.allSettled(
+      templateNames.map(async (templateName) => {
+        const htmlPath = path.join(srcTemplatesPath, `${templateName}.html`);
+        const templateHtml = await readHtml(htmlPath);
+        html = html.replace(`{{${templateName}}}`, templateHtml);
+      }),
+    );
+
+    /* write new html */
+    const writeStream = createWriteStream(distHtmlPath, {
+      autoClose: true,
+    });
+    writeStream.write(html);
+    writeStream.close();
   } catch (err) {
     console.error(err);
     return err;
