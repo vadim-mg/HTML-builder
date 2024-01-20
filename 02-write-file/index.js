@@ -7,13 +7,13 @@ const dirName = '02-write-file';
 const fileName = 'text.txt';
 
 const filePath = path.normalize(path.join(dirName, fileName));
-const fd = fs.createWriteStream(filePath, { autoClose: true });
+const writeStream = fs.createWriteStream(filePath, { autoClose: true });
 
 let rl = readline.createInterface(process.stdin, process.stdout);
 
 rl.on('close', () => {
   console.log('Good bye!');
-  fd.close();
+  writeStream.close();
 });
 
 rl.setPrompt('enter text here: ');
@@ -24,6 +24,6 @@ rl.on('line', (inputText) => {
     rl.close();
     return;
   }
-  fd.write(inputText);
+  writeStream.write(inputText);
   rl.prompt();
 });
