@@ -1,10 +1,9 @@
 const fs = require('node:fs/promises');
 const path = require('path');
 
-const dirName = '01-read-file';
 const fileName = 'text.txt';
 
-const filePath = path.normalize(path.join(dirName, fileName));
+const filePath = path.join(__dirname, fileName);
 
 fs.open(filePath, 'r')
   .then((fd) => {
@@ -28,9 +27,4 @@ fs.open(filePath, 'r')
   })
   .catch((err) => {
     console.error(err.stack);
-    if (process.cwd().indexOf(dirName) > 0) {
-      console.log(
-        `Script must be executed in the root directory(HTML-BUILDER) using the command "node ${dirName}"!!!`,
-      );
-    }
   });

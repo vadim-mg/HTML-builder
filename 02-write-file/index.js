@@ -3,7 +3,7 @@ const readline = require('readline');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const dirName = '02-write-file';
+const dirName = __dirname;
 const fileName = 'text.txt';
 
 const filePath = path.normalize(path.join(dirName, fileName));
@@ -24,6 +24,6 @@ rl.on('line', (inputText) => {
     rl.close();
     return;
   }
-  writeStream.write(inputText);
+  writeStream.write(inputText + '\n');
   rl.prompt();
 });

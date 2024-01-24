@@ -1,7 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
-const dirName = '04-copy-directory';
+const dirName = __dirname;
 const srcDirName = 'files';
 const dstDirName = 'files-copy';
 

@@ -2,7 +2,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { createWriteStream } = require('node:fs');
 
-const DIR_NAME = '06-build-page';
+const DIR_NAME = __dirname;
 const ASSETS_DIR_NAME = 'assets';
 
 const SRC_TEMPLATES_DIR = 'components';

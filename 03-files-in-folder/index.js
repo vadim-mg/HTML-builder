@@ -1,7 +1,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
-const dirName = '03-files-in-folder';
+const dirName = __dirname;
 const readDirName = 'secret-folder';
 
 const readDirPath = path.normalize(path.join(dirName, readDirName));

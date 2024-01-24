@@ -2,7 +2,7 @@ const fs = require('node:fs/promises');
 const { createWriteStream } = require('node:fs');
 const path = require('node:path');
 
-const dirName = '05-merge-styles';
+const dirName = __dirname;
 const srcDirName = 'styles';
 const dstDirName = 'project-dist';
 
